@@ -1,10 +1,12 @@
 package entities;
 
+import java.io.Serializable;
+
 /**
  * Created by neaGaze on 8/15/17.
  */
 
-public abstract class Piece implements PieceInterface{
+public abstract class Piece implements PieceInterface, Serializable{
 
     public COLORS color;
 

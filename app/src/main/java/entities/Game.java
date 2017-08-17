@@ -19,6 +19,11 @@ public class Game implements Serializable{
     private Rules rules;
     private static int PLAYER_SIZE = 2;
 
+    public static interface OnUIUpdateListener {
+        public void changeUIPieceColor(int x, int y, COLORS color);
+    }
+
+    private OnUIUpdateListener onUIUpdateListener;
 
     private Board board;
     public COLORS currentTurn = COLORS.WHITE;
@@ -52,7 +57,7 @@ public class Game implements Serializable{
     /**
      * When a person makes a move
      * **/
-    public void addPiece(int x, int y) throws WrongPersonException, InvalidMoveException, InvalidRuleException {
+    public void addPiece(int x, int y, OnUIUpdateListener callback) throws WrongPersonException, InvalidMoveException, InvalidRuleException {
 
         // check with the rules to see if the move is valid
         rules.checkLegalMoves(x, y, currentTurn);
@@ -63,6 +68,9 @@ public class Game implements Serializable{
         else if(currentTurn == COLORS.WHITE)
             board.addNewPiece(x, y, new WhitePiece());
         else throw new WrongPersonException("No turn is defined");
+
+        // convert the entire lines until the piece with the same color is reached
+        rules.convertColor(x, y, currentTurn, callback);
 
         // toggle the players turn
         togglePlayers();
@@ -88,5 +96,13 @@ public class Game implements Serializable{
 
     public void setRules(Rules rules) {
         this.rules = rules;
+    }
+
+    public OnUIUpdateListener getOnUIUpdateListener() {
+        return onUIUpdateListener;
+    }
+
+    public void setOnUIUpdateListener(OnUIUpdateListener onUIUpdateListener) {
+        this.onUIUpdateListener = onUIUpdateListener;
     }
 }

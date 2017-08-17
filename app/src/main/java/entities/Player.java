@@ -1,10 +1,12 @@
 package entities;
 
+import java.io.Serializable;
+
 /**
  * Created by neaGaze on 8/15/17.
  */
 
-public class Player implements PlayerInterface {
+public class Player implements PlayerInterface, Serializable {
 
     public String name;
 

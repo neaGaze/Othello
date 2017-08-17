@@ -12,11 +12,13 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import entities.BlackPiece;
 import entities.Board;
 import entities.COLORS;
 import entities.Game;
 import entities.Piece;
 import entities.PieceInterface;
+import entities.WhitePiece;
 import exceptions.InvalidMoveException;
 import exceptions.InvalidRuleException;
 import exceptions.WrongPersonException;
@@ -38,9 +40,10 @@ public class GameFragment extends Fragment {
         board = game.getBoard();
 
         View view = inflater.inflate(R.layout.game_fragment, container, false);
-        RecyclerView boardRecyclerView = (RecyclerView)view.findViewById(R.id.boardRecyclerView);
-        boardRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), board.getSize()));
-        RecyclerViewAdapter adapter = new RecyclerViewAdapter(getActivity(), board);
+        final RecyclerView boardRecyclerView = (RecyclerView)view.findViewById(R.id.boardRecyclerView);
+        final GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), board.getSize());
+        boardRecyclerView.setLayoutManager(gridLayoutManager);
+        final RecyclerViewAdapter adapter = new RecyclerViewAdapter(getActivity(), board);
         adapter.setOnItemClickListener(new RecyclerViewAdapter.OnItemClickListener() {
             @Override
             public void onClick(View view, int position) {
@@ -48,8 +51,22 @@ public class GameFragment extends Fragment {
                 int x = position / board.getSize();
                 int y = position % board.getSize();
                 boolean hasErrorInMove = false;
+
                 try {
-                    game.addPiece(x, y);
+                    game.addPiece(x, y, new Game.OnUIUpdateListener(){
+                        @Override
+                        public void changeUIPieceColor(int x, int y, COLORS color) {
+                            // code to change the individual pieces that gets overturned
+                            // View v = gridLayoutManager.findViewByPosition(x * board.getSize() + y);
+                            //View v = boardRecyclerView.findViewHolderForAdapterPosition(x * board.getSize() + y).itemView;
+                            //v.setBackgroundColor(getResources().getColor(color == COLORS.WHITE ?
+                            //        R.color.colorWhite : R.color.colorBlack));
+                            Piece piece = (color == COLORS.BLACK ? new BlackPiece() : new WhitePiece());
+                            adapter.updateGridPosition(x, y, piece);
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
+
                 } catch (WrongPersonException e) {
                     e.printStackTrace();
                     hasErrorInMove = true;
@@ -63,9 +80,10 @@ public class GameFragment extends Fragment {
                     hasErrorInMove = true;
                     Log.e("InvalidRuleExcp",""+e.getMessage());
                 } finally {
-                    Log.d("move status","Error: "+hasErrorInMove);
+                    Log.v("move status","Error: "+hasErrorInMove);
                     if(!hasErrorInMove) {
-                        Piece p = (Piece) game.getBoard().getPiece(x, y).flip();
+                        // change the color of the pieces
+                        Piece p = (Piece) game.getBoard().getPiece(x, y);
                         view.setBackgroundColor(getResources().getColor((p.color == COLORS.WHITE) ?
                                 R.color.colorWhite : R.color.colorBlack));
                     }
@@ -102,6 +120,10 @@ public class GameFragment extends Fragment {
 
         public void setOnItemClickListener(OnItemClickListener onItemClickListener){this.onItemClickListener = onItemClickListener;}
 
+        public void updateGridPosition(int x, int y, Piece piece) {
+            grids[x][y] = piece;
+        }
+
         @Override
         public RecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(context).inflate(R.layout.piece, parent, false);
@@ -118,7 +140,7 @@ public class GameFragment extends Fragment {
 
             if(grids[x][y] != null) {
                 Piece piece = (Piece)grids[x][y];
-                Log.e("Piece",""+piece.color);
+                Log.v("Piece",""+piece.color);
                 holder.imageView.setBackgroundColor(piece.color == COLORS.BLACK ?
                         context.getResources().getColor(R.color.colorBlack) : context.getResources().getColor(R.color.colorWhite));
             }
