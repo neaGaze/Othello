@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import entities.BlackPiece;
 import entities.Board;
@@ -32,6 +33,8 @@ public class GameFragment extends Fragment {
     private Board board;
     private Game game;
 
+    private TextView tvPlayer1, tvPlayer2, tvTurn;
+
     public GameFragment(){}
 
     @Override
@@ -40,6 +43,11 @@ public class GameFragment extends Fragment {
         board = game.getBoard();
 
         View view = inflater.inflate(R.layout.game_fragment, container, false);
+
+        tvPlayer1 = (TextView) view.findViewById(R.id.tvPlayer1);
+        tvPlayer2 = (TextView) view.findViewById(R.id.tvPlayer2);
+        tvTurn = (TextView) view.findViewById(R.id.tvTurns);
+
         final RecyclerView boardRecyclerView = (RecyclerView)view.findViewById(R.id.boardRecyclerView);
         final GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), board.getSize());
         boardRecyclerView.setLayoutManager(gridLayoutManager);
@@ -56,13 +64,20 @@ public class GameFragment extends Fragment {
                     game.addPiece(x, y, new Game.OnUIUpdateListener(){
                         @Override
                         public void changeUIPieceColor(int x, int y, COLORS color) {
+                            boolean isBlack = color == COLORS.BLACK;
                             // code to change the individual pieces that gets overturned
-                            // View v = gridLayoutManager.findViewByPosition(x * board.getSize() + y);
-                            //View v = boardRecyclerView.findViewHolderForAdapterPosition(x * board.getSize() + y).itemView;
-                            //v.setBackgroundColor(getResources().getColor(color == COLORS.WHITE ?
-                            //        R.color.colorWhite : R.color.colorBlack));
-                            Piece piece = (color == COLORS.BLACK ? new BlackPiece() : new WhitePiece());
+                            Piece piece = (isBlack ? new BlackPiece() : new WhitePiece());
                             adapter.updateGridPosition(x, y, piece);
+                            adapter.notifyDataSetChanged();
+
+                            // change the turn text as well
+                            tvTurn.setText(isBlack ? "WHITE TURN" : "BLACK TURN");
+                            tvTurn.setTextColor(getResources().getColor(isBlack ? R.color.colorWhite : R.color.colorBlack));
+                        }
+
+                        @Override
+                        public void onShowSuggestions(boolean suggestionGrid[][]) {
+                            adapter.updateSuggestions(suggestionGrid);
                             adapter.notifyDataSetChanged();
                         }
                     });
@@ -80,7 +95,7 @@ public class GameFragment extends Fragment {
                     hasErrorInMove = true;
                     Log.e("InvalidRuleExcp",""+e.getMessage());
                 } finally {
-                    Log.v("move status","Error: "+hasErrorInMove);
+                    Log.v("move status",""+hasErrorInMove);
                     if(!hasErrorInMove) {
                         // change the color of the pieces
                         Piece p = (Piece) game.getBoard().getPiece(x, y);
@@ -105,6 +120,7 @@ public class GameFragment extends Fragment {
         Context context;
         Board board;
         PieceInterface grids[][];
+        boolean suggestionGrid[][];
 
         private OnItemClickListener onItemClickListener;
 
@@ -116,6 +132,19 @@ public class GameFragment extends Fragment {
             this.context = context;
             this.grids = board.getPieces();
             this.board = board;
+            this.suggestionGrid = new boolean[board.getSize()][board.getSize()];
+            resetSuggestions();
+        }
+
+        public void resetSuggestions(){
+            for(int i = 0; i < board.getSize(); i++)
+                for(int j = 0; j < board.getSize(); j++)
+                    suggestionGrid[i][j] = false;
+        }
+
+        public void updateSuggestions(boolean suggestionGrid[][]){
+            //resetSuggestions();
+            this.suggestionGrid = suggestionGrid; //[x][y]=sugg;
         }
 
         public void setOnItemClickListener(OnItemClickListener onItemClickListener){this.onItemClickListener = onItemClickListener;}
@@ -138,11 +167,13 @@ public class GameFragment extends Fragment {
 
             if((x+y) % 2  == 0) holder.imageView.setBackgroundColor(context.getResources().getColor(R.color.colorPrimaryDark));
 
+            Piece piece = (Piece)grids[x][y];
             if(grids[x][y] != null) {
-                Piece piece = (Piece)grids[x][y];
                 Log.v("Piece",""+piece.color);
                 holder.imageView.setBackgroundColor(piece.color == COLORS.BLACK ?
                         context.getResources().getColor(R.color.colorBlack) : context.getResources().getColor(R.color.colorWhite));
+            } else if(suggestionGrid[x][y]){
+                holder.imageView.setBackgroundColor(context.getResources().getColor(R.color.colorYellow));
             }
         }
 

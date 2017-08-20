@@ -14,13 +14,16 @@ import exceptions.WrongPersonException;
 
 public class Game implements Serializable{
 
-    private PlayerInterface[] players;
+    private Player[] players;
+    private Piece currentPlayer;
 
     private Rules rules;
     private static int PLAYER_SIZE = 2;
 
     public static interface OnUIUpdateListener {
         public void changeUIPieceColor(int x, int y, COLORS color);
+        //public void onShowSuggestions(int x, int y, boolean showSugg);
+        public void onShowSuggestions(boolean suggestionGrid[][]);
     }
 
     private OnUIUpdateListener onUIUpdateListener;
@@ -30,9 +33,9 @@ public class Game implements Serializable{
 
     public Game(){
         // inititalize players
-        players = new PlayerInterface[PLAYER_SIZE];
+        players = new Player[PLAYER_SIZE];
         players[0] = new Player("Player 1", COLORS.WHITE);
-        players[0] = new Player("Player 2", COLORS.BLACK);
+        players[1] = new Player("Player 2", COLORS.BLACK);
 
         // initialize board. mid-tables are always filled with pieces
         board = Board.getInstance();
@@ -70,15 +73,26 @@ public class Game implements Serializable{
         else throw new WrongPersonException("No turn is defined");
 
         // convert the entire lines until the piece with the same color is reached
-        rules.convertColor(x, y, currentTurn, callback);
+        int convertedPieces = rules.convertColor(x, y, currentTurn, callback);
 
         // toggle the players turn
-        togglePlayers();
+        togglePlayers(convertedPieces);
+
+        // now show suggestions
+        rules.showSuggestions(currentTurn, callback);
     }
 
-    private void togglePlayers() {
-        if(currentTurn == COLORS.BLACK) currentTurn = COLORS.WHITE;
-        else if(currentTurn == COLORS.WHITE) currentTurn = COLORS.BLACK;
+    private void togglePlayers(int convertedPiece) {
+        if(currentTurn == COLORS.BLACK) {
+            currentTurn = COLORS.WHITE;
+            players[1].capture(convertedPiece);
+            players[0].lost(convertedPiece);
+        }
+        else if(currentTurn == COLORS.WHITE) {
+            currentTurn = COLORS.BLACK;
+            players[0].capture(convertedPiece);
+            players[1].lost(convertedPiece);
+        }
     }
 
 

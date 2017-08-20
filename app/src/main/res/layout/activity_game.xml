@@ -10,6 +10,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     android:layout_gravity="center"
+    android:background="@color/colorBrown"
     android:gravity="center_vertical"
     tools:context="com.practice.neagaze.androidpractice.GameActivity">
 

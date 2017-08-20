@@ -3,6 +3,57 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="4dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@color/colorWhite"/>
+        <TextView
+            android:id="@+id/tvPlayer1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:textSize="14dp"
+            android:textColor="@color/colorWhite"
+            android:text="Player 1 score"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:background="@color/colorBlack"/>
+            <TextView
+                android:id="@+id/tvPlayer2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textSize="14dp"
+                android:textColor="@color/colorBlack"
+                android:text="Player 2 Score"/>
+</LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTurns"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:textSize="16dp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/colorWhite"
+        android:text="White Turn"/>
+
     <android.support.v7.widget.RecyclerView
         android:id="@+id/boardRecyclerView"
         android:layout_width="wrap_content"
